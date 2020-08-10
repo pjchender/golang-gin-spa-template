@@ -130,6 +130,9 @@ dist
 # Dependency directories (remove the comment below to include it)
 # vendor/
 
+# System
+.DS_Store
+
 # Editor
 .idea
 .vscode
