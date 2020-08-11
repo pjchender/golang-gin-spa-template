@@ -3,19 +3,20 @@ package main
 import (
 	"crypto/md5"
 	"fmt"
-	"github.com/gin-gonic/contrib/static"
-	"github.com/gin-gonic/gin"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
+
+	"github.com/gin-gonic/contrib/static"
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
 	router := gin.Default()
 
 	// STEP 1：讓所有 SPA 中的檔案可以在正確的路徑被找到
-	router.Use(static.Serve("/", static.LocalFile("./../client/build", false)))
+	router.Use(static.Serve("/", static.LocalFile("./../client/build", true)))
 
 	// STEP 2： serve 靜態檔案
 	router.Static("/public", "./public")
@@ -31,7 +32,7 @@ func main() {
 	// https://github.com/go-ggz/ggz/blob/master/api/index.go
 	router.NoRoute(func(ctx *gin.Context) {
 		file, _ := ioutil.ReadFile("./../client/build/index.html")
-		etag := fmt.Sprintf("%x", md5.Sum(file))
+		etag := fmt.Sprintf("%x", md5.Sum(file)) //nolint:gosec
 		ctx.Header("ETag", etag)
 		ctx.Header("Cache-Control", "no-cache")
 
@@ -39,6 +40,7 @@ func main() {
 			if strings.Contains(match, etag) {
 				ctx.Status(http.StatusNotModified)
 
+				//這裡若沒 return 的話，會執行到 ctx.Data
 				return
 			}
 		}
